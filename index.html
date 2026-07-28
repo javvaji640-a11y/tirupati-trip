@@ -41,6 +41,7 @@
     .hero p{margin:auto;max-width:820px;color:var(--muted);font-size:16px;line-height:1.65}
     .badges{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:18px}
     .badge{background:rgba(242,200,121,.07);border:1px solid var(--line);padding:8px 14px;border-radius:999px;font-size:14px}
+    #tripStatus{border-color:rgba(245,166,35,.55);color:var(--gold);font-weight:700}
 
     /* ---------- layout ---------- */
     .container{width:min(1220px,calc(100% - 28px));margin:auto;padding-bottom:40px}
@@ -156,13 +157,25 @@
     .nearby-item a{flex-shrink:0;text-decoration:none;font-size:16px;background:rgba(11,16,38,.7);border:1px solid var(--line);border-radius:10px;padding:7px 9px}
     .nearby-item a:hover{border-color:var(--marigold)}
 
-    /* ---------- day summary ---------- */
+    /* ---------- hour-by-hour schedule ---------- */
     .section{margin-top:20px;padding:24px}
     .section h2{margin:0 0 16px;font-size:26px}
-    .summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-    .summary-card{padding:18px;background:rgba(242,200,121,.05);border:1px solid var(--line);border-radius:16px}
-    .summary-card b{display:block;margin-bottom:6px;font-family:'Eczar',serif;font-size:17px;color:var(--gold)}
-    .summary-card span{color:var(--muted);font-size:14px;line-height:1.55}
+    .sched-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:14px}
+    .day-card{background:rgba(242,200,121,.05);border:1px solid var(--line);border-radius:16px;padding:16px 12px;display:flex;flex-direction:column;gap:2px}
+    .day-card header{padding:0 8px 10px;border-bottom:1px solid var(--line);margin-bottom:8px}
+    .day-card header b{display:block;font-family:'Eczar',serif;font-size:17px;color:var(--gold)}
+    .day-card header small{color:var(--muted);font-size:12px;letter-spacing:.1em;text-transform:uppercase}
+    .ev{display:grid;grid-template-columns:82px 1fr;gap:10px;padding:7px 8px;border-radius:10px;border:1px solid transparent;font-size:14px;line-height:1.5}
+    .ev time{color:var(--gold);font-size:12px;font-weight:700;padding-top:2px}
+    .ev span{color:var(--muted)}
+    .ev.link{cursor:pointer;transition:background .2s}
+    .ev.link:hover{background:rgba(242,200,121,.08)}
+    .ev.link:hover span{color:var(--text)}
+    .ev .warn{font-style:normal;font-weight:700;color:#FF9E8A}
+    .ev.now{background:linear-gradient(135deg,rgba(245,166,35,.20),rgba(232,84,63,.13));border-color:rgba(245,166,35,.45)}
+    .ev.now span{color:var(--text)}
+    .now-flag{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:999px;font:700 10.5px 'Karla',sans-serif;letter-spacing:.1em;color:#1a1206;background:linear-gradient(135deg,var(--marigold),var(--kumkum));animation:nowblink 1.6s ease-in-out infinite}
+    @keyframes nowblink{50%{opacity:.55}}
     .note{margin-top:14px;color:var(--muted);font-size:13px;line-height:1.6}
     footer{text-align:center;color:var(--muted);padding:10px 20px 30px;font-size:13px}
 
@@ -179,18 +192,18 @@
       .panel{border-radius:18px}
     }
     @media(prefers-reduced-motion:reduce){
-      .flow-line,.pin-wrap.active .pin,.me-dot{animation:none}
+      .flow-line,.pin-wrap.active .pin,.me-dot,.now-flag{animation:none}
     }
     .chip:focus-visible,.btn:focus-visible,.stop:focus-visible,.map-btn:focus-visible{outline:2px solid var(--marigold);outline-offset:2px}
   </style>
 </head>
 <body>
 <header class="hero">
-  <div class="om">ॐ · Family Pilgrimage · 5 Days</div>
+  <div class="om">ॐ · Family Pilgrimage · 29 Jul – 2 Aug 2026</div>
   <h1>Tirupati <em>Family Trip</em></h1>
   <p>Hyderabad → Tirupati → Tirumala walk → Kanipakam → Arunachalam → Srikalahasti → home.
      Tap any stop to fly to it on the map, see nearby restaurants and places, and open live Google Maps navigation.</p>
-  <div class="badges"><span class="badge">🚌 Bus</span><span class="badge">🥾 Walk</span><span class="badge">🚗 Rental car</span><span class="badge">🚆 Train</span></div>
+  <div class="badges"><span class="badge" id="tripStatus">⏳ …</span><span class="badge">🚌 Bus</span><span class="badge">🥾 Walk</span><span class="badge">🚗 Rental car</span><span class="badge">🚆 Train</span></div>
 </header>
 
 <main class="container">
@@ -211,7 +224,7 @@
           <span class="day-chip" id="dayChip">Day 1</span>
         </div>
         <p id="placeDescription"></p>
-        <div class="meta"><span id="modeTag"></span><span id="stayTag"></span></div>
+        <div class="meta"><span id="modeTag"></span><span id="stayTag"></span><span id="whenTag"></span></div>
         <div class="actions">
           <a id="mapsLink" class="btn" href="#" target="_blank" rel="noopener">📍 Open in Google Maps</a>
           <a id="dirPrevLink" class="btn ghost" href="#" target="_blank" rel="noopener">🛣️ Route from previous stop</a>
@@ -230,16 +243,12 @@
   </div>
 
   <section class="panel section">
-    <h2>Simple day-wise plan</h2>
-    <div class="summary-grid">
-      <div class="summary-card"><b>Day 1</b><span>Travel from Hyderabad to Tirupati by overnight bus and check in to the hotel.</span></div>
-      <div class="summary-card"><b>Day 2</b><span>Walk from Alipiri to Tirumala, complete darshan, return to Tirupati and rest.</span></div>
-      <div class="summary-card"><b>Day 3</b><span>Take the rental car, visit Kanipakam and continue to Arunachalam. Check in to the hotel.</span></div>
-      <div class="summary-card"><b>Day 4</b><span>Complete the Arunachalam temple visit and Girivalam, then travel to Srikalahasti.</span></div>
-      <div class="summary-card"><b>Day 5</b><span>Complete Srikalahasti pooja, return to Tirupati Railway Station and board the train home.</span></div>
-      <div class="summary-card"><b>Before leaving</b><span>Keep darshan tickets, hotel bookings, rental car and train details saved offline.</span></div>
-    </div>
-    <div class="note">Nearby restaurants and places come live from OpenStreetMap, so coverage in small towns can be partial — the Google Maps buttons always show the full picture. Use "Track my location" while travelling to see where you are on the route.</div>
+    <h2>Hour-by-hour plan</h2>
+    <div class="sched-grid" id="schedGrid"></div>
+    <div class="note">Times are approximate — darshan queues and road conditions vary. Tap any row marked 📍 to see that place on the map.
+    During the trip, the current activity glows automatically. Nearby restaurants and places come live from OpenStreetMap, so coverage in
+    small towns can be partial — the Google Maps buttons always show the full picture. Keep darshan tickets, hotel bookings, rental car and
+    train details saved offline before leaving.</div>
   </section>
 </main>
 
@@ -248,33 +257,34 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 const places=[
- {name:'Hyderabad',coords:[17.3850,78.4867],icon:'🚌',day:1,mode:'Bus',stay:'Overnight journey',tmode:'transit',
-  desc:'Start from Hyderabad by overnight bus to Tirupati.',gq:'Hyderabad, Telangana'},
- {name:'Tirupati Hotel',coords:[13.6288,79.4192],icon:'🏨',day:1,mode:'Local travel',stay:'Hotel check-in',tmode:'driving',
-  desc:'Reach Tirupati, check in to the hotel, freshen up and prepare for the Tirumala walk.',
+ {name:'Hyderabad',coords:[17.3850,78.4867],icon:'🚌',day:1,mode:'Bus',stay:'Overnight journey',when:'🕒 Wed 7:00 PM',tmode:'transit',
+  desc:'Board the 7:00 PM bus from Hyderabad on Wednesday 29 Jul — overnight journey to Tirupati.',gq:'Hyderabad, Telangana'},
+ {name:'Tirupati Hotel',coords:[13.6288,79.4192],icon:'🏨',day:2,mode:'Local travel',stay:'Hotel check-in',when:'🕒 Thu 6:00 AM',tmode:'driving',
+  desc:'Arrive around 6:00 AM Thursday, check in to the hotel, freshen up and have breakfast before the climb.',
   nearby:['restaurants'],gq:'Tirupati, Andhra Pradesh'},
- {name:'Alipiri Footpath',coords:[13.6500,79.4080],icon:'🥾',day:2,mode:'Walk',stay:'Trek start',tmode:'driving',
-  desc:'Start the walk to Tirumala through the Alipiri footpath — around 9 km and 3,550 steps.',
+ {name:'Alipiri Footpath',coords:[13.6500,79.4080],icon:'🥾',day:2,mode:'Walk',stay:'Trek start',when:'🕒 Thu 9:00 AM',tmode:'driving',
+  desc:'Start the Alipiri footpath climb at 9:00 AM — around 9 km and 3,550 steps to Tirumala.',
   gq:'Alipiri Footpath, Tirupati'},
- {name:'Tirumala',coords:[13.6833,79.3472],icon:'🛕',day:2,mode:'Walk / Local bus',stay:'Darshan',tmode:'walking',
-  desc:'Complete Tirumala darshan, take rest, and return to Tirupati.',
+ {name:'Tirumala',coords:[13.6833,79.3472],icon:'🛕',day:2,mode:'Walk / Local bus',stay:'Sarva Darshan',when:'🕒 Thu 3:00 PM queue',tmode:'walking',
+  desc:'Reach by ~1:30 PM and have lunch, then join the free Sarva Darshan queue at 3:00 PM (expected wait 18–20 hours). Darshan and laddu by ~11:00 AM Friday.',
   nearby:['restaurants','attractions'],gq:'Tirumala Sri Venkateswara Temple'},
- {name:'Tirupati Rest',coords:[13.6288,79.4192],icon:'🛏️',day:2,mode:'Local travel',stay:'Hotel rest',tmode:'driving',
-  desc:'Return to Tirupati after darshan, freshen up and take proper rest.',
+ {name:'Tirupati Rest',coords:[13.6288,79.4192],icon:'🛏️',day:3,mode:'Local travel',stay:'Lunch & rest',when:'🕒 Fri 12:00 PM',tmode:'driving',
+  desc:'Return to Tirupati by noon Friday for lunch and rest, then pick up the rental car at 4:00 PM.',
   nearby:['restaurants'],gq:'Tirupati, Andhra Pradesh'},
- {name:'Kanipakam',coords:[13.2788,79.0355],icon:'🚗',day:3,mode:'Rental car',stay:'Temple visit',tmode:'driving',
-  desc:'Take the rental car from Tirupati and visit Sri Varasiddhi Vinayaka Temple at Kanipakam.',
+ {name:'Kanipakam',coords:[13.2788,79.0355],icon:'🚗',day:3,mode:'Rental car',stay:'Temple visit',when:'🕒 Fri 5:00 PM',tmode:'driving',
+  desc:'Drive the rental car to Kanipakam and visit Sri Varasiddhi Vinayaka Temple around 5:00 PM.',
   nearby:['attractions','restaurants'],gq:'Kanipakam Vinayaka Temple'},
- {name:'Arunachalam',coords:[12.2253,79.0747],icon:'🔥',day:3,mode:'Rental car / Walk',stay:'Hotel check-in',tmode:'driving',
-  desc:'Travel to Arunachalam (Tiruvannamalai), check in to the hotel, complete the temple visit and Girivalam.',
+ {name:'Arunachalam',coords:[12.2253,79.0747],icon:'🔥',day:3,mode:'Rental car / Walk',stay:'Hotel + Girivalam',when:'🕒 Fri night → Sat',tmode:'driving',
+  desc:'Drive from 7:00 PM and reach Tiruvannamalai by ~10:30 PM for hotel check-in. Girivalam starts 5:30 AM Saturday; Arunachaleswarar Temple darshan at 11:00 AM.',
   nearby:['restaurants','attractions'],gq:'Arunachalesvara Temple, Tiruvannamalai'},
- {name:'Srikalahasti',coords:[13.7498,79.6984],icon:'🙏',day:4,mode:'Rental car',stay:'Pooja',tmode:'driving',
-  desc:'Travel from Arunachalam to Srikalahasti and complete the planned pooja and darshan.',
+ {name:'Srikalahasti',coords:[13.7498,79.6984],icon:'🙏',day:4,mode:'Rental car',stay:'Pooja & darshan',when:'🕒 Sat 8:30 PM arrive',tmode:'driving',
+  desc:'Leave Arunachalam at 4:00 PM Saturday and reach by ~8:30 PM. Temple darshan and Rahu–Ketu pooja at 6:00 AM Sunday.',
   nearby:['restaurants','attractions'],gq:'Srikalahasteeswara Temple, Srikalahasti'},
- {name:'Tirupati Railway Station',coords:[13.6281,79.4198],icon:'🚆',day:5,mode:'Car / Train',stay:'Return journey',tmode:'driving',
-  desc:'Return to Tirupati Railway Station and board the train back home.',
+ {name:'Tirupati Railway Station',coords:[13.6281,79.4198],icon:'🚆',day:5,mode:'Car / Train',stay:'Return journey',when:'🕒 Sun 10:00 AM',tmode:'driving',
+  desc:'Drive back Sunday at 10:00 AM, return the rental car and board the train home as per ticket.',
   nearby:['restaurants'],gq:'Tirupati Railway Station'}
 ];
+const DAY_DATES={1:'Wed 29 Jul',2:'Thu 30 Jul',3:'Fri 31 Jul',4:'Sat 1 Aug',5:'Sun 2 Aug'};
 
 const NEARBY_KINDS={
   restaurants:{chip:'🍽️ Restaurants',title:'Restaurants nearby',emoji:'🍽️',radius:3000,gsearch:'restaurants'},
@@ -317,7 +327,7 @@ places.forEach((p,i)=>{
   if(p.day!==lastDay){
     lastDay=p.day;
     const d=document.createElement('div');
-    d.className='day-label';d.textContent=`Day ${p.day}`;
+    d.className='day-label';d.textContent=`Day ${p.day} · ${DAY_DATES[p.day]}`;
     timeline.appendChild(d);
   }
   const item=document.createElement('div');
@@ -340,10 +350,12 @@ function selectPlace(i,fly=true){
   const pin=document.getElementById('pin-'+i); if(pin) pin.classList.add('active');
 
   $('placeTitle').textContent=p.name;
-  $('dayChip').textContent='Day '+p.day;
+  $('dayChip').textContent=`Day ${p.day} · ${DAY_DATES[p.day]}`;
   $('placeDescription').textContent=p.desc;
   $('modeTag').textContent=`${p.icon} ${p.mode}`;
   $('stayTag').textContent=`📌 ${p.stay}`;
+  $('whenTag').textContent=p.when||'';
+  $('whenTag').style.display=p.when?'':'none';
   $('mapsLink').href=placeUrl(p);
   $('dirMeLink').href=dirUrl(null,p.coords,p.tmode);
   const prev=places[i-1];
@@ -500,6 +512,87 @@ function stopTracking(){
   trackBtn.classList.remove('on');
   trackBtn.textContent='🧭 Track my location';
 }
+
+/* ---------- hour-by-hour schedule + live "now" ---------- */
+const DAY_TITLES={1:'Overnight bus',2:'The climb & the queue',3:'Darshan & the road west',4:'Girivalam & onward',5:'Pooja & home'};
+const SCHEDULE=[
+ {day:1,at:'2026-07-29T19:00:00+05:30',show:'7:00 PM',text:'🚌 Board the bus from Hyderabad to Tirupati',stop:0},
+ {day:2,at:'2026-07-30T06:00:00+05:30',show:'6:00 AM',text:'Arrive at Tirupati bus stand',stop:1},
+ {day:2,at:'2026-07-30T06:15:00+05:30',show:'6:00–7:30',text:'Hotel check-in and freshen up',stop:1},
+ {day:2,at:'2026-07-30T07:30:00+05:30',show:'7:30–8:30',text:'Breakfast, buy water and snacks, final preparations',stop:1},
+ {day:2,at:'2026-07-30T09:00:00+05:30',show:'9:00 AM',text:'🥾 Start the Alipiri footpath climb to Tirumala',stop:2},
+ {day:2,at:'2026-07-30T13:30:00+05:30',show:'1:30–2:30',text:'Reach Tirumala, lunch and freshen up',stop:3},
+ {day:2,at:'2026-07-30T15:00:00+05:30',show:'3:00 PM',text:'🛕 Join the free Sarva Darshan queue — <em class="warn">expected wait 18–20 hours</em>',stop:3},
+ {day:3,at:'2026-07-31T11:00:00+05:30',show:'~11:00 AM',text:'Complete darshan and collect laddu prasadam',stop:3},
+ {day:3,at:'2026-07-31T12:00:00+05:30',show:'12:00 PM',text:'Return down to Tirupati',stop:4},
+ {day:3,at:'2026-07-31T13:00:00+05:30',show:'1:00 PM',text:'Hotel, lunch and rest',stop:4},
+ {day:3,at:'2026-07-31T16:00:00+05:30',show:'4:00 PM',text:'🚗 Pick up the rental car',stop:4},
+ {day:3,at:'2026-07-31T17:00:00+05:30',show:'5:00 PM',text:'Visit Kanipakam Vinayaka Temple',stop:5},
+ {day:3,at:'2026-07-31T19:00:00+05:30',show:'7:00 PM',text:'Drive to Arunachalam (Tiruvannamalai)',stop:6},
+ {day:3,at:'2026-07-31T22:30:00+05:30',show:'10:30 PM',text:'Hotel check-in, dinner and overnight stay',stop:6},
+ {day:4,at:'2026-08-01T05:30:00+05:30',show:'5:30 AM',text:'🔥 Begin Girivalam (Giri Pradakshina) — ~14 km barefoot walk',stop:6},
+ {day:4,at:'2026-08-01T09:30:00+05:30',show:'9:30 AM',text:'Breakfast and rest',stop:6},
+ {day:4,at:'2026-08-01T11:00:00+05:30',show:'11:00 AM',text:'Arunachaleswarar Temple darshan',stop:6},
+ {day:4,at:'2026-08-01T14:00:00+05:30',show:'2:00 PM',text:'Lunch',stop:6},
+ {day:4,at:'2026-08-01T16:00:00+05:30',show:'4:00 PM',text:'Depart for Srikalahasti',stop:7},
+ {day:4,at:'2026-08-01T20:00:00+05:30',show:'8:00–9:00',text:'Reach Srikalahasti, hotel check-in and rest',stop:7},
+ {day:5,at:'2026-08-02T06:00:00+05:30',show:'6:00 AM',text:'🙏 Srikalahasti Temple darshan (Rahu–Ketu pooja if planned)',stop:7},
+ {day:5,at:'2026-08-02T09:00:00+05:30',show:'9:00 AM',text:'Breakfast',stop:7},
+ {day:5,at:'2026-08-02T10:00:00+05:30',show:'10:00 AM',text:'Drive to Tirupati Railway Station, return the car',stop:8},
+ {day:5,at:'2026-08-02T12:00:00+05:30',show:'As per ticket',text:'🚆 Train journey back home',stop:8}
+];
+
+const schedGrid=$('schedGrid');
+const dayBodies={};
+[1,2,3,4,5].forEach(d=>{
+  const card=document.createElement('div');
+  card.className='day-card';
+  card.innerHTML=`<header><b>Day ${d} · ${DAY_DATES[d]}</b><small>${DAY_TITLES[d]}</small></header>`;
+  schedGrid.appendChild(card);
+  dayBodies[d]=card;
+});
+SCHEDULE.forEach(e=>{
+  const row=document.createElement('div');
+  const linked=e.stop!=null;
+  row.className='ev'+(linked?' link':'');
+  row.innerHTML=`<time>${e.show}</time><span>${e.text}${linked?' 📍':''}</span>`;
+  if(linked){
+    row.title='Show on map';
+    row.addEventListener('click',()=>{
+      selectPlace(e.stop);
+      document.querySelector('.map-shell').scrollIntoView({behavior:'smooth',block:'center'});
+    });
+  }
+  dayBodies[e.day].appendChild(row);
+  e.el=row;
+});
+
+const tripStart=new Date(SCHEDULE[0].at);
+const tripEnd=new Date('2026-08-02T23:00:00+05:30');
+const day1Midnight=new Date('2026-07-29T00:00:00+05:30');
+function tick(){
+  const now=new Date();
+  const el=$('tripStatus');
+  let active=null;
+  if(now>=tripStart&&now<=tripEnd)SCHEDULE.forEach(e=>{if(new Date(e.at)<=now)active=e});
+  SCHEDULE.forEach(e=>{
+    e.el.classList.toggle('now',e===active);
+    const flag=e.el.querySelector('.now-flag');
+    if(e===active&&!flag)e.el.querySelector('span').insertAdjacentHTML('beforeend',' <span class="now-flag">NOW</span>');
+    if(e!==active&&flag)flag.remove();
+  });
+  if(now<tripStart){
+    const ms=tripStart-now,d=Math.floor(ms/864e5),h=Math.floor(ms%864e5/36e5),m=Math.floor(ms%36e5/6e4);
+    el.textContent=`⏳ Trip starts in ${d?d+'d ':''}${h}h ${m}m`;
+  }else if(now>tripEnd){
+    el.textContent='🙏 Trip completed · Om Namo Venkatesaya';
+  }else{
+    const dayN=Math.min(5,Math.max(1,Math.floor((now-day1Midnight)/864e5)+1));
+    el.textContent=`🛕 Day ${dayN} of 5 · ${DAY_DATES[dayN]}`;
+  }
+}
+tick();
+setInterval(tick,30000);
 
 /* ---------- init ---------- */
 map.fitBounds(route.getBounds(),{padding:[36,36]});
