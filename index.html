@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tirupati Family Trip Plan</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    :root{--bg:#08111f;--card:#111d2f;--text:#f6f8fc;--muted:#b6c2d3;--accent:#ffb347;--accent2:#ff7a59}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:Segoe UI,Arial,sans-serif;background:radial-gradient(circle at top left,rgba(255,179,71,.14),transparent 32%),radial-gradient(circle at bottom right,rgba(62,133,255,.15),transparent 35%),var(--bg);color:var(--text)}
+    .hero{padding:42px 20px 26px;text-align:center}.hero h1{margin:0 0 10px;font-size:clamp(30px,6vw,54px)}.hero p{margin:auto;max-width:780px;color:var(--muted);font-size:17px;line-height:1.6}
+    .badges{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:18px}.badge{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);padding:9px 14px;border-radius:999px;font-size:14px}
+    .container{width:min(1180px,calc(100% - 28px));margin:auto;padding-bottom:36px}.layout{display:grid;grid-template-columns:390px 1fr;gap:20px;align-items:start}.panel{background:rgba(17,29,47,.92);border:1px solid rgba(255,255,255,.09);border-radius:22px;box-shadow:0 20px 45px rgba(0,0,0,.22);overflow:hidden}.panel-head{padding:20px 20px 10px}.panel-head h2{margin:0 0 6px}.panel-head p{margin:0;color:var(--muted);font-size:14px}.timeline{padding:10px 14px 18px}.stop{display:grid;grid-template-columns:42px 1fr;gap:12px;padding:14px 10px;border-radius:16px;cursor:pointer;transition:.2s}.stop:hover,.stop.active{background:linear-gradient(135deg,rgba(255,179,71,.16),rgba(255,122,89,.10));transform:translateY(-1px)}.stop-icon{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#111;font-size:20px}.stop h3{margin:0 0 4px;font-size:16px}.stop p{margin:0;font-size:13px;line-height:1.45;color:var(--muted)}
+    .map-wrap{padding:14px}#map{height:630px;border-radius:18px;overflow:hidden}.info{margin-top:14px;padding:18px;background:linear-gradient(135deg,#16253a,#0f1a2b);border-radius:18px;border:1px solid rgba(255,255,255,.08)}.info h3{margin:0 0 8px;font-size:22px}.info p{margin:0 0 14px;color:var(--muted);line-height:1.6}.meta{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}.meta span{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.09);border-radius:999px;padding:8px 11px;font-size:13px}.btn{display:inline-flex;align-items:center;gap:8px;text-decoration:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#121212;font-weight:700;padding:11px 15px;border-radius:12px}
+    .section{margin-top:20px;padding:22px}.section h2{margin:0 0 16px}.summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.summary-card{padding:17px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.08);border-radius:16px}.summary-card b{display:block;margin-bottom:6px}.summary-card span{color:var(--muted);font-size:14px;line-height:1.5}.note{margin-top:14px;color:var(--muted);font-size:13px;line-height:1.6}footer{text-align:center;color:var(--muted);padding:10px 20px 28px;font-size:13px}
+    @media(max-width:900px){.layout{grid-template-columns:1fr}#map{height:470px}.summary-grid{grid-template-columns:1fr}}@media(max-width:520px){.hero{padding-top:28px}.container{width:min(100% - 18px,1180px)}#map{height:410px}.panel{border-radius:18px}}
+  </style>
+</head>
+<body>
+<header class="hero">
+  <h1>🛕 Tirupati Family Trip</h1>
+  <p>Hyderabad → Tirupati → Tirumala Walk → Kanipakam → Arunachalam → Srikalahasti → Tirupati Railway Station → Home</p>
+  <div class="badges"><span class="badge">🚌 Bus</span><span class="badge">🥾 Walk</span><span class="badge">🚗 Rental Car</span><span class="badge">🚆 Train</span></div>
+</header>
+<main class="container">
+  <div class="layout">
+    <section class="panel"><div class="panel-head"><h2>Trip Plan</h2><p>Tap any place to view it on the map.</p></div><div class="timeline" id="timeline"></div></section>
+    <section class="panel map-wrap"><div id="map"></div><div class="info"><h3 id="placeTitle">Hyderabad</h3><p id="placeDescription">Start from Hyderabad by overnight bus to Tirupati.</p><div class="meta"><span id="modeTag">🚌 Bus</span><span id="stayTag">🌙 Overnight journey</span></div><a id="mapsLink" class="btn" href="#" target="_blank" rel="noopener">📍 Open in Google Maps</a></div></section>
+  </div>
+  <section class="panel section"><h2>Simple Day-wise Plan</h2><div class="summary-grid">
+    <div class="summary-card"><b>Day 1</b><span>Travel from Hyderabad to Tirupati by bus and check in to the hotel.</span></div>
+    <div class="summary-card"><b>Day 2</b><span>Start from Tirupati, walk to Tirumala, complete darshan, return to Tirupati and rest.</span></div>
+    <div class="summary-card"><b>Day 3</b><span>Take a rental car, visit Kanipakam and continue to Arunachalam. Check in to the hotel.</span></div>
+    <div class="summary-card"><b>Day 4</b><span>Complete Arunachalam visit and Girivalam, then travel to Srikalahasti.</span></div>
+    <div class="summary-card"><b>Day 5</b><span>Complete Srikalahasti pooja, return to Tirupati Railway Station and board the train home.</span></div>
+    <div class="summary-card"><b>Important</b><span>Keep darshan, hotel, rental car and train details ready before the journey.</span></div>
+  </div><div class="note">Map locations are approximate. Use the Google Maps button for live navigation and current routes.</div></section>
+</main>
+<footer>Family pilgrimage plan • Mobile-friendly • Ready for GitHub Pages</footer>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const places=[
+{name:'Hyderabad',coords:[17.3850,78.4867],icon:'🚌',mode:'Bus',stay:'Overnight journey',desc:'Start from Hyderabad by overnight bus to Tirupati.'},
+{name:'Tirupati Hotel',coords:[13.6288,79.4192],icon:'🏨',mode:'Local travel',stay:'Hotel check-in',desc:'Reach Tirupati, check in to the hotel, freshen up and prepare for the Tirumala walk.'},
+{name:'Alipiri Footpath',coords:[13.6500,79.4080],icon:'🥾',mode:'Walk',stay:'Trek start',desc:'Start the walk to Tirumala through the Alipiri footpath.'},
+{name:'Tirumala',coords:[13.6833,79.3472],icon:'🛕',mode:'Walk / Local bus',stay:'Darshan',desc:'Complete Tirumala darshan, take rest, and return to Tirupati.'},
+{name:'Tirupati Rest',coords:[13.6288,79.4192],icon:'🛏️',mode:'Local travel',stay:'Hotel rest',desc:'Return to Tirupati after darshan, freshen up and take proper rest.'},
+{name:'Kanipakam',coords:[13.2788,79.0355],icon:'🚗',mode:'Rental car',stay:'Temple visit',desc:'Take a rental car from Tirupati and visit Sri Varasiddhi Vinayaka Temple at Kanipakam.'},
+{name:'Arunachalam',coords:[12.2253,79.0747],icon:'🔥',mode:'Rental car / Walk',stay:'Hotel check-in',desc:'Travel to Arunachalam, check in to the hotel, complete temple visit and Girivalam.'},
+{name:'Srikalahasti',coords:[13.7498,79.6984],icon:'🙏',mode:'Rental car',stay:'Pooja',desc:'Travel from Arunachalam to Srikalahasti and complete the planned pooja and darshan.'},
+{name:'Tirupati Railway Station',coords:[13.6281,79.4198],icon:'🚆',mode:'Car / Train',stay:'Return journey',desc:'Return to Tirupati Railway Station and board the train back home.'}
+];
+const map=L.map('map').setView([14.3,79.0],7);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+const route=L.polyline(places.map(p=>p.coords),{color:'#ff8a4c',weight:5,opacity:.9,dashArray:'10,10'}).addTo(map);const markers=[];const timeline=document.getElementById('timeline');
+function mapsUrl(p){return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(p.coords[0]+','+p.coords[1])}`}
+function selectPlace(i){const p=places[i];document.querySelectorAll('.stop').forEach((el,n)=>el.classList.toggle('active',n===i));placeTitle.textContent=p.name;placeDescription.textContent=p.desc;modeTag.textContent=`${p.icon} ${p.mode}`;stayTag.textContent=`📌 ${p.stay}`;mapsLink.href=mapsUrl(p);map.flyTo(p.coords,p.name.includes('Tirumala')?13:11,{duration:1.2});markers[i].openPopup()}
+places.forEach((p,i)=>{const m=L.marker(p.coords).addTo(map).bindPopup(`<div style="min-width:210px"><strong style="font-size:16px">${p.icon} ${p.name}</strong><p style="margin:8px 0;line-height:1.45">${p.desc}</p><a href="${mapsUrl(p)}" target="_blank" rel="noopener">Open in Google Maps</a></div>`);m.on('click',()=>selectPlace(i));markers.push(m);const item=document.createElement('div');item.className='stop';item.innerHTML=`<div class="stop-icon">${p.icon}</div><div><h3>${i+1}. ${p.name}</h3><p>${p.desc}</p></div>`;item.addEventListener('click',()=>selectPlace(i));timeline.appendChild(item)});
+map.fitBounds(route.getBounds(),{padding:[30,30]});selectPlace(0);
+</script>
+</body>
+</html>
